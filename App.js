@@ -49,7 +49,7 @@ export default function App() {
 				let loginRequest = await axios.post('https://wet-coins-notice-180-244-128-215.loca.lt/api/auth/login', {
 					email: email,
 					password: password,
-					device_name: `${Devicelmanufacturer}`
+					device_name: `${Device.manufacturer}`
 				});
 				let data = loginRequest.data.data;
 				if (loginRequest.status == 200) {
