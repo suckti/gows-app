@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import { Input, Icon, Button } from '@rneui/themed';
+import { AuthContext } from './AuthContext';
 
 export default function Register({navigation}) {
 	const [isShowPass, setIsShowPass] = useState(true);

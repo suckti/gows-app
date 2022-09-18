@@ -1,15 +1,99 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import { Button } from '@rneui/base';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useEffect, useReducer } from 'react';
+import axios from 'axios';
 
 import Register from './Register';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Signin from './Signin';
+import Login from './Login';
 import Home from './Home';
+import SplashScreen from './SplashScreen';
+import { AuthContext } from './AuthContext';
+
+import * as secureStore from 'expo-secure-store';
+import * as Device from 'expo-device';
 
 export default function App() {
-	function StartScreen({navigation}) {
+	const initialState = {
+		isLoading: true,
+		isSignout: false,
+		userToken: null
+	};
+	const stateFunction = (prevState, action) => {
+		switch (action.type) {
+			case 'restore_token':
+				return {
+					...prevState,
+					userToken: action.token,
+					isLoading: false
+				};
+			case 'login':
+				return {
+					...prevState,
+					isSignOut: false,
+					userToken: action.token
+				};
+			case 'logout':
+				return {
+					...prevState,
+					isSignOut: true,
+					userToken: null
+				};
+		}
+	};
+
+	const authContext = {
+		login: async (email, password) => {
+			try {
+				let loginRequest = await axios.post('https://wet-coins-notice-180-244-128-215.loca.lt/api/auth/login', {
+					email: email,
+					password: password,
+					device_name: `${Devicelmanufacturer}`
+				});
+				let data = loginRequest.data.data;
+				if (loginRequest.status == 200) {
+					await secureStore.setItemAsync('userToken', data.access_token);
+					dispatch({ type: 'login', token: data.access_token });
+				}
+			} catch (e) {
+				console.log(e.response.data)
+				if (e.response.data.message) {
+					Alert.alert(e.response.data.message);
+				} else {
+					Alert.alert(e.mesage);
+				}
+
+				return;
+			}
+		},
+		logout: async () => {
+			await secureStore.deleteItemAsync('userToken');
+			dispatch({ type: 'logout' })
+		},
+		register: async () => {
+			//send data here
+			dispatch({ type: 'login', token: 'dummy_token' });
+		}
+	};
+
+	useEffect(() => {
+		const bootstrapAsync = async () => {
+			let userToken;
+			try {
+				userToken = await secureStore.getItemAsync('userToken')
+			} catch (err) {
+				Alert.alert(err.message)
+			}
+
+			dispatch({ type: 'restore_token', token: userToken })
+		};
+		bootstrapAsync();
+	}, []);
+
+	const [state, dispatch] = useReducer(stateFunction, initialState);
+
+	function StartScreen({ navigation }) {
 		return (
 			<View style={styles.container}>
 				<Button
@@ -29,7 +113,7 @@ export default function App() {
 					onPress={() => navigation.navigate('Register')}
 				/>
 				<Button
-					title="Sign In"
+					title="Login"
 					buttonStyle={{
 						backgroundColor: 'black',
 						borderWidth: 2,
@@ -42,27 +126,33 @@ export default function App() {
 						marginVertical: 10,
 					}}
 					titleStyle={{ fontWeight: 'bold' }}
-					onPress={() => navigation.navigate('SignIn')}
+					onPress={() => navigation.navigate('Login')}
 				/>
 			</View>
 		);
 	}
 
+	if (state.isLoading) {
+		return <SplashScreen />
+	}
+
 	const Stack = createNativeStackNavigator();
 	return (
 		<NavigationContainer>
-			<Stack.Navigator initialRouteName='StartScreen'>
-				<Stack.Screen name='StartScreen' component={StartScreen} options={{title: ''}}/>
-				<Stack.Screen name='Register' component={Register} />
-				<Stack.Screen name='SignIn' component={Signin} />
-				<Stack.Screen name='Home' component={Home} />
-			</Stack.Navigator>
+			<AuthContext.Provider value={authContext}>
+				<Stack.Navigator>
+					{state.userToken == null ? (
+						<>
+							<Stack.Screen name='StartScreen' component={StartScreen} options={{ title: '' }} />
+							<Stack.Screen name='Register' component={Register} />
+							<Stack.Screen name='Login' component={Login} />
+						</>
+					) : (
+						<Stack.Screen name='Home' component={Home} />
+					)}
+				</Stack.Navigator>
+			</AuthContext.Provider>
 		</NavigationContainer>
-
-		// <View style={styles.container}>
-		//   <Text>Open up App.js to start working on your app!Thank you so much</Text>
-		//   <StatusBar style="auto" />
-		// </View>
 	);
 }
 
