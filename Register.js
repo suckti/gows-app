@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import { Input, Icon, Button } from '@rneui/themed';
 import { AuthContext } from './AuthContext';
 
-export default function Register({navigation}) {
+export default function Register({ navigation }) {
 	const [isShowPass, setIsShowPass] = useState(true);
 	const [eyePass, setEyePass] = useState('eye');
 	const [isShowConfirmPass, setIsShowConfirmPass] = useState(true);
@@ -11,10 +11,12 @@ export default function Register({navigation}) {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
+	const [name, setName] = useState('');
+	const [btnRgs, setBtnRgs] = useState(false);
+	const { register } = useContext(AuthContext);
 
-	const register = () => {
+	const submitRegister = async () => {
 		const strongRegex = new RegExp("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
-
 		if (!strongRegex.test(email)) {
 			Alert.alert('Not valid email !')
 			return false;
@@ -25,12 +27,16 @@ export default function Register({navigation}) {
 			Alert.alert('Password and Confirm Password didn\'t match !');
 			return false;
 		}
-		navigation.navigate('Home');
+
+		setBtnRgs(true);
+		await register(name, email, password)
+		setBtnRgs(false);
 	}
 
 	return (
 		<View>
-			<Input label='Name' />
+			<Input label='Name'
+				onChangeText={(name) => setName(name)} />
 			<Input
 				label='Email'
 				keyboardType='email-address'
@@ -59,7 +65,7 @@ export default function Register({navigation}) {
 					/>}
 				onChangeText={(confirmPassword) => setConfirmPassword(confirmPassword)}
 			/>
-			<Button title="Create Account" onPress={() => register(navigation)}/>
+			<Button title="Create Account" onPress={() => submitRegister(navigation)} disabled={btnRgs} />
 		</View>
 	);
 }

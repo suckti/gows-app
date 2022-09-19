@@ -46,7 +46,7 @@ export default function App() {
 	const authContext = {
 		login: async (email, password) => {
 			try {
-				let loginRequest = await axios.post('https://wet-coins-notice-180-244-128-215.loca.lt/api/auth/login', {
+				let loginRequest = await axios.post('https://two-turtles-mix-180-244-128-215.loca.lt/api/auth/login', {
 					email: email,
 					password: password,
 					device_name: `${Device.manufacturer}`
@@ -57,11 +57,10 @@ export default function App() {
 					dispatch({ type: 'login', token: data.access_token });
 				}
 			} catch (e) {
-				console.log(e.response.data)
 				if (e.response.data.message) {
-					Alert.alert(e.response.data.message);
+					Alert.alert('', e.response.data.message);
 				} else {
-					Alert.alert(e.mesage);
+					Alert.alert('', e.mesage);
 				}
 
 				return;
@@ -71,9 +70,28 @@ export default function App() {
 			await secureStore.deleteItemAsync('userToken');
 			dispatch({ type: 'logout' })
 		},
-		register: async () => {
-			//send data here
-			dispatch({ type: 'login', token: 'dummy_token' });
+		register: async (name, email, password) => {
+			try {
+				let registerRequest = await axios.post('https://two-turtles-mix-180-244-128-215.loca.lt/api/auth/register', {
+					name: name,
+					email: email,
+					password: password,
+					device_name: `${Device.manufacturer}`
+				});
+				let data = registerRequest.data.data;
+				if (registerRequest.status == 200) {
+					await secureStore.setItemAsync('userToken', data.access_token);
+					Alert.alert(registerRequest.data.message)
+					dispatch({ type: 'login', token: data.access_token });
+				}
+			} catch (e) {
+				if (e.response.data.message) {
+					Alert.alert('', e.response.data.message);
+				} else {
+					Alert.alert('', e.mesage);
+				}
+				return;
+			}
 		}
 	};
 
