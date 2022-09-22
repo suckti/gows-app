@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Alert } from 'react-native';
 import { Input, Icon, Button } from '@rneui/themed';
 import { AuthContext } from './AuthContext';
 
-export default function Register() {
+export default function Register({ navigation }) {
 	const [isShowPass, setIsShowPass] = useState(true);
 	const [eyePass, setEyePass] = useState('eye');
 	const [email, setEmail] = useState('');
@@ -12,17 +12,17 @@ export default function Register() {
 	const { login } = useContext(AuthContext);
 
 	const submitLogin = async () => {
-		setBtnLogin(true);
 		const strongRegex = new RegExp("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
 
 		if (!strongRegex.test(email)) {
-			Alert.alert('Not valid email !')
+			Alert.alert('Email not valid!')
 			return false;
 		} else if (password == '') {
 			Alert.alert('Password minimum 8 character !');
 			return false;
 		}
 
+		setBtnLogin(true);
 		await login(email, password);
 		setBtnLogin(false);
 	}
@@ -45,8 +45,8 @@ export default function Register() {
 					/>}
 				onChangeText={(password) => setPassword(password)}
 			/>
-			<Button title="Login" onPress={() => submitLogin()} disabled={btnLogin}/>
-			<Text>Fogot Your Password?</Text>
+			<Button title="Login" onPress={() => submitLogin()} disabled={btnLogin} />
+			<Text onPress={() => navigation.navigate('ForgotPassword')}>Fogot Your Password?</Text>
 		</View>
 	);
 }

@@ -8,6 +8,8 @@ import axios from 'axios';
 import Register from './Register';
 import Login from './Login';
 import Home from './Home';
+import ForgotPassword from './ForgotPassword';
+
 import SplashScreen from './SplashScreen';
 import { AuthContext } from './AuthContext';
 
@@ -15,6 +17,7 @@ import * as secureStore from 'expo-secure-store';
 import * as Device from 'expo-device';
 
 export default function App() {
+	const serverUrl = 'https://cuddly-parrots-double-180-244-128-185.loca.lt';
 	const initialState = {
 		isLoading: true,
 		isSignout: false,
@@ -46,7 +49,7 @@ export default function App() {
 	const authContext = {
 		login: async (email, password) => {
 			try {
-				let loginRequest = await axios.post('https://two-turtles-mix-180-244-128-215.loca.lt/api/auth/login', {
+				let loginRequest = await axios.post(`${serverUrl}/api/auth/login`, {
 					email: email,
 					password: password,
 					device_name: `${Device.manufacturer}`
@@ -60,7 +63,7 @@ export default function App() {
 				if (e.response.data.message) {
 					Alert.alert('', e.response.data.message);
 				} else {
-					Alert.alert('', e.mesage);
+					Alert.alert('', e.message);
 				}
 
 				return;
@@ -72,7 +75,7 @@ export default function App() {
 		},
 		register: async (name, email, password) => {
 			try {
-				let registerRequest = await axios.post('https://two-turtles-mix-180-244-128-215.loca.lt/api/auth/register', {
+				let registerRequest = await axios.post(`${serverUrl}/api/auth/register`, {
 					name: name,
 					email: email,
 					password: password,
@@ -83,6 +86,25 @@ export default function App() {
 					await secureStore.setItemAsync('userToken', data.access_token);
 					Alert.alert(registerRequest.data.message)
 					dispatch({ type: 'login', token: data.access_token });
+				}
+			} catch (e) {
+				if (e.response.data.message) {
+					Alert.alert('', e.response.data.message);
+				} else {
+					Alert.alert('', e.mesage);
+				}
+				return;
+			}
+		},
+		forgotPassword: async (email) => {
+			try {
+				let resetPassRequest = await axios.post(`${serverUrl}/api/auth/forgot-password`, {
+					email: email,
+				});
+				let data = resetPassRequest.data.data;
+				if (resetPassRequest.status == 200) {
+					Alert.alert('', resetPassRequest.data.message)
+					dispatch({ type: 'logout' })
 				}
 			} catch (e) {
 				if (e.response.data.message) {
@@ -164,6 +186,7 @@ export default function App() {
 							<Stack.Screen name='StartScreen' component={StartScreen} options={{ title: '' }} />
 							<Stack.Screen name='Register' component={Register} />
 							<Stack.Screen name='Login' component={Login} />
+							<Stack.Screen name='ForgotPassword' component={ForgotPassword} />
 						</>
 					) : (
 						<Stack.Screen name='Home' component={Home} />

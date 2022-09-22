@@ -18,7 +18,7 @@ export default function Register({ navigation }) {
 	const submitRegister = async () => {
 		const strongRegex = new RegExp("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
 		if (!strongRegex.test(email)) {
-			Alert.alert('Not valid email !')
+			Alert.alert('Email not valid!')
 			return false;
 		} else if (password.length < 8) {
 			Alert.alert('Password minimum 8 character !');
