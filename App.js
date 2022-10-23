@@ -17,7 +17,7 @@ import * as secureStore from 'expo-secure-store';
 import * as Device from 'expo-device';
 
 export default function App() {
-	const serverUrl = 'https://cuddly-parrots-double-180-244-128-185.loca.lt';
+	const serverUrl = 'http://170.187.229.26';
 	const initialState = {
 		isLoading: true,
 		isSignout: false,
@@ -101,7 +101,6 @@ export default function App() {
 				let resetPassRequest = await axios.post(`${serverUrl}/api/auth/forgot-password`, {
 					email: email,
 				});
-				let data = resetPassRequest.data.data;
 				if (resetPassRequest.status == 200) {
 					Alert.alert('', resetPassRequest.data.message)
 					dispatch({ type: 'logout' })
@@ -189,7 +188,9 @@ export default function App() {
 							<Stack.Screen name='ForgotPassword' component={ForgotPassword} />
 						</>
 					) : (
-						<Stack.Screen name='Home' component={Home} />
+						<Stack.Group screenOptions={{headerShown: false}}>
+							<Stack.Screen name='Home' component={Home} options={{ title: '' }} />
+						</Stack.Group>
 					)}
 				</Stack.Navigator>
 			</AuthContext.Provider>
